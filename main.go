@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"simle_bank/api"
 	db "simle_bank/db/sqlc"
@@ -9,6 +10,10 @@ import (
 
 	_ "github.com/lib/pq"
 )
+
+func init() {
+	fmt.Println("🔍 Registered SQL drivers:", sql.Drivers())
+}
 
 func main() {
 	config, err := util.LoadConfig(".")
