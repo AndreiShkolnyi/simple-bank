@@ -28,7 +28,7 @@ func LoadConfig(path string) (config Config, err error) {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Println("⚠️ app.env не найден, продолжаем с переменными окружения")
 	}
-
+	
 	err = viper.Unmarshal(&config)
 	return
 }
