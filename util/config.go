@@ -1,6 +1,7 @@
 package util
 
 import (
+	"log"
 	"time"
 
 	"github.com/spf13/viper"
@@ -20,10 +21,9 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()
-
-	err = viper.ReadInConfig()
-	if err != nil {
-		return
+	
+	if err := viper.ReadInConfig(); err != nil {
+		log.Println("⚠️ app.env не найден, продолжаем с переменными окружения")
 	}
 
 	err = viper.Unmarshal(&config)
