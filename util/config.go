@@ -2,6 +2,7 @@ package util
 
 import (
 	"log"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -20,6 +21,8 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")
 
+
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 	
 	if err := viper.ReadInConfig(); err != nil {
