@@ -2,9 +2,11 @@ package token
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 const minSecretKeySize = 32
@@ -19,9 +21,10 @@ func NewJWTMaker(secretKey string) (Maker, error) {
 	return &JWTMaker{secretKey}, nil
 }
 
-func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (string, error) {
+func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (string, *Payload, error) {
 	payload := NewPayload(username, duration)
 	claims := jwt.MapClaims{
+		"id": payload.ID.String(),
 		"sub": maker.secretKey,               // subject (например, id пользователя)
 		"name": payload.Username,                // произвольные данные
 		"iat": payload.IssuedAt.Unix(),          // issued at (время выпуска)
@@ -32,10 +35,10 @@ func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (str
 
 	signedToken, err := token.SignedString([]byte(maker.secretKey))
 	if err != nil {
-		return "", err
+		return "", payload, err
 	}
 
-	return signedToken, nil
+	return signedToken, payload, nil
 }
 func (maker *JWTMaker) VerifyToken(tokenString string) (*Payload, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
@@ -67,6 +70,16 @@ func (maker *JWTMaker) VerifyToken(tokenString string) (*Payload, error) {
 	if !ok {
 		return nil, fmt.Errorf("поле iat отсутствует или неверного типа")
 	}
+	log.Print(claims["id"])
+	idStr, ok := claims["id"].(string)
+	if !ok {
+		return nil, fmt.Errorf("поле id отсутствует или неверного типа")
+	}
+
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return nil, fmt.Errorf("не удалось распарсить UUID: %w", err)
+	}
 
 	// Переводим во время:
 	exp := time.Unix(int64(expFloat), 0)
@@ -74,7 +87,12 @@ func (maker *JWTMaker) VerifyToken(tokenString string) (*Payload, error) {
 
 	duration := exp.Sub(iat)
 
-	payload := NewPayload(claims["name"].(string), duration)
+	payload := &Payload{
+		ID:        id,
+		Username:  claims["name"].(string),
+		IssuedAt:  iat,
+		ExpiredAt: time.Now().Add(duration),
+	}
 
 	return payload, nil
 }

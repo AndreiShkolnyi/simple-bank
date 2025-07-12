@@ -39,10 +39,11 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 }
 
 func (server *Server) setupRouter() {
-	
+
 	server.router.POST("/users", server.createUser)
 	server.router.GET("/users/:username", server.getUser)
 	server.router.POST("/users/login", server.loginUser)
+	server.router.POST("/tokens/renew_access", server.renewAccessToken)
 
 	authRoutes := server.router.Group("/").Use(authMiddleware(server.tokenMaker))
 
