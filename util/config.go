@@ -1,9 +1,7 @@
 package util
 
 import (
-	"fmt"
 	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -31,8 +29,13 @@ func LoadConfig(path string) (config Config, err error) {
 		log.Println("⚠️ app.env не найден, продолжаем с переменными окружения")
 	}
 
-	fmt.Println("ENV DB_DRIVER =", os.Getenv("DB_DRIVER"))
-	
-	err = viper.Unmarshal(&config)
-	return
+	config = Config{
+		DBDriver:            viper.GetString("DB_DRIVER"),
+		DBSource:            viper.GetString("DB_SOURCE"),
+		ServerAddress:       viper.GetString("SERVER_ADDRESS"),
+		TokenSymmetricKey:   viper.GetString("TOKEN_SYMMETRIC_KEY"),
+		AccessTokenDuration: viper.GetDuration("ACCESS_TOKEN_DURATION"),
+	}
+
+	return config, nil
 }
